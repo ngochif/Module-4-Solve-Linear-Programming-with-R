@@ -1,0 +1,91 @@
+---
+title: "LP in R"
+author: "Franklin Ngochi"
+date: "2023-09-24"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Load the lpSolve library
+```{r}
+library(lpSolve)
+```
+
+
+# Define the coefficients of the objective function
+```{r}
+objective_coef <- c(420, 360, 300)
+```
+
+#Define the right-hand side of capacity constraints
+```{r}
+rhs_capacity <- c(750, 900, 450)
+```
+
+# Define the coefficients for capacity constraints
+```{r}
+coeff_capacity <- matrix(c(1, 1, 1, 1, 1, 1, 1, 1, 1), nrow = 3, byrow = TRUE)
+```
+
+# Define the right-hand side of storage space constraints
+```{r}
+rhs_storage <- c(13000, 12000, 5000)
+```
+
+# Define the coefficients for storage space constraints
+```{r}
+coeff_storage <- matrix(c(20, 15, 12, 20, 15, 12, 20, 15, 12), nrow = 3, byrow = TRUE)
+```
+
+# Define the coefficients for same capacity percentage constraints
+```{r}
+coeff_percentage <- matrix(c(900, -750, 0, 0, 450, -900), nrow = 2, byrow = TRUE)
+```
+
+# Define the direction of optimization (maximization)
+```{r}
+direction <- "max"
+```
+
+
+# Create the LP model
+```{r}
+lp_model <- make.lp(0, length(objective_coef))
+set.objfn(lp_model, objective_coef)
+lp.control(lp_model, sense = direction)
+```
+
+#Add capacity constraint
+```{r}
+for (i in 1:3) {
+  add.constraint(lp_model, coeff_capacity[i, ], "<=", rhs_capacity[i])
+}
+```
+
+#Add storage space constraint
+```{r}
+for (i in 1:3) {
+  add.constraint(lp_model, coeff_storage[i, ], "<=", rhs_storage[i])
+}
+```
+
+#Add same capacity percentage constraint
+```{r}
+for (i in 1:2) {
+  add.constraint(lp_model, coeff_percentage[i, ], "=", 0)
+}
+```
+
+#Solve the LP model
+```{r}
+solve(lp_model)
+optimal_solution <- get.variables(lp_model)
+optimal_solution
+```
